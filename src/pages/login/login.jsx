@@ -1,9 +1,19 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { signIn } from "aws-amplify/auth";
+import { signIn, signOut } from "aws-amplify/auth";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
+  const expireSession = async () => {
+    return await signOut();
+  };
+
+  useEffect(() => {
+    expireSession();
+  }, []);
+
+  const navigate = useNavigate();
   const initialValues = { email: "", password: "" };
   const validationSchema = Yup.object({
     email: Yup.string()
@@ -13,9 +23,24 @@ const LoginPage = () => {
   });
 
   const onSubmit = async (values) => {
-    const { isSignedIn, nextStep } = await signIn({ username: values.email, password: values.password });
+    try {
+      const { isSignedIn, nextStep } = await signIn({
+        username: values.email,
+        password: values.password,
+      });
 
-    console.log("isSignedIn", isSignedIn, "nextStep", nextStep)
+      console.log("isSignedIn", isSignedIn, "nextStep", nextStep);
+
+      if (isSignedIn) {
+        navigate("/dashboard");
+      } else {
+        alert("User not found or requires additional verification.");
+      }
+    } catch (error) {
+      console.error("Error during sign-in:", error);
+
+      alert("User not found. Please check your credentials.");
+    }
   };
 
   return (

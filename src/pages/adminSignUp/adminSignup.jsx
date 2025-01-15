@@ -4,7 +4,7 @@ import * as Yup from "yup";
 import { signUp } from "aws-amplify/auth";
 import { useNavigate } from "react-router-dom";
 
-const SignupPage = () => {
+const adminSignupPage = () => {
   const navigate = useNavigate();
 
   const initialValues = {
@@ -37,10 +37,12 @@ const SignupPage = () => {
       const { isSignUpComplete, userId, nextStep } = await signUp({
         username: values.email,
         password: values.password,
+
         options: {
           userAttributes: {
             email: values.email,
             phone_number: values.phoneNumber, // E.164 number convention
+            "custom:type": "Admin",
           },
           // optional
           autoSignIn: true, // or SignInOptions e.g { authFlowType: "USER_SRP_AUTH" }
@@ -67,7 +69,7 @@ const SignupPage = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-        <h1 className="text-2xl font-semibold mb-4">Sign Up</h1>
+        <h1 className="text-2xl font-semibold mb-4">Admin Sign Up</h1>
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
@@ -139,4 +141,4 @@ const SignupPage = () => {
   );
 };
 
-export default SignupPage;
+export default adminSignupPage;
