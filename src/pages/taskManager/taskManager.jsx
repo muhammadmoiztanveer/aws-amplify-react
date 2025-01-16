@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Button, Input, Space, Table, Modal, Select } from "antd";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import { generateClient } from "aws-amplify/api";
+import { createTodo, updateTodo, deleteTodo } from "../../graphql/mutations";
+import { listTodos } from "../../graphql/queries";
 
 const TaskManager = () => {
   // State for managing tasks
@@ -10,6 +13,20 @@ const TaskManager = () => {
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
   const [taskStatus, setTaskStatus] = useState("Pending");
+
+  // graphql client
+  const client = generateClient();
+
+  const addTask = async () => {
+    await client.graphql({
+      query: createTodo,
+      variables: {
+        input: {
+          name: "My first todo!",
+        },
+      },
+    });
+  };
 
   // Handle opening the modal for adding/editing tasks
   const handleOpenModal = (task) => {
@@ -28,24 +45,11 @@ const TaskManager = () => {
   };
 
   // Handle saving a task
-  const handleSaveTask = () => {
-    if (editingTask) {
-      const updatedTasks = tasks.map((task) =>
-        task.id === editingTask.id
-          ? { ...task, title: taskTitle, description: taskDescription, status: taskStatus }
-          : task
-      );
-      setTasks(updatedTasks);
-    } else {
-      const newTask = {
-        id: Date.now(),
-        title: taskTitle,
-        description: taskDescription,
-        status: taskStatus,
-      };
-      setTasks([...tasks, newTask]);
-    }
-    setTaskModalOpen(false);
+  const handleSaveTask = async () => {
+    // const result = await client.graphql({ query: listTodos });
+    // console.log(result);
+    await addTask();
+    // console.log(resultSavedTodo);
   };
 
   // Handle deleting a task
@@ -127,17 +131,10 @@ const TaskManager = () => {
         centered
         open={taskModalOpen}
         footer={[
-          <Button
-            key="cancel"
-            onClick={() => setTaskModalOpen(false)}
-          >
+          <Button key="cancel" onClick={() => setTaskModalOpen(false)}>
             Cancel
           </Button>,
-          <Button
-            key="save"
-            type="primary"
-            onClick={handleSaveTask}
-          >
+          <Button key="save" type="primary" onClick={handleSaveTask}>
             Save
           </Button>,
         ]}
