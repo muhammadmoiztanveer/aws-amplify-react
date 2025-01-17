@@ -1,855 +1,169 @@
-import React, { useRef, useState } from "react";
-import { SearchOutlined } from "@ant-design/icons";
-import { UploadOutlined } from "@ant-design/icons";
-import {
-  Button,
-  Input,
-  Space,
-  Table,
-  Modal,
-  Upload,
-  Select,
-  Radio,
-} from "antd";
-import Highlighter from "react-highlight-words";
-import { FaEdit, FaPen, FaTrash } from "react-icons/fa";
+import React, { useState, useEffect } from "react";
+import { Button, Input, Table, Select, Modal, Form } from "antd";
+import { FaPen, FaTrash } from "react-icons/fa";
+import { generateClient } from "aws-amplify/api";
+import { updateUsers, deleteUsers } from "../../graphql/mutations";
+import { getUsers, listUsers } from "../../graphql/queries";
 
-const Orders = () => {
-  // product tags
-  const productTags = [];
-  for (let i = 10; i < 36; i++) {
-    productTags.push({
-      value: i.toString(36) + i,
-      label: i.toString(36) + i,
+const Users = () => {
+  const [searchEmail, setSearchEmail] = useState("");
+  const [searchStatus, setSearchStatus] = useState("All");
+  const [searchType, setSearchType] = useState("All");
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [userData, setUserData] = useState([]);
+
+  const client = generateClient();
+
+  const fetchAllUsers = async () => {
+    const users = await client.graphql({ query: listUsers });
+    console.log("all fetched users", users.data.listUsers.items);
+    setUserData(users.data.listUsers.items);
+  };
+
+  useEffect(() => {
+    fetchAllUsers();
+  }, []);
+
+  const handleSearch = () => {
+    console.log("Search initiated:", {
+      email: searchEmail,
+      status: searchStatus,
+      type: searchType,
     });
-  }
-  const handleProductTags = (value) => {
-    console.log(`Selected: ${value}`);
   };
-  // product tags
 
-  // product sizes
-  const options = [];
-  for (let i = 10; i < 36; i++) {
-    options.push({
-      value: i.toString(36) + i,
-      label: i.toString(36) + i,
+  const showEditModal = (record) => {
+    setCurrentUser(record);
+    setIsEditModalVisible(true);
+  };
+
+  const updateUsersInState = (updatedUser) => {
+    setUserData((prevUserData) =>
+      prevUserData.map((user) =>
+        user.id === updatedUser.id ? updatedUser : user
+      )
+    );
+  };
+
+  const deleteUserFromState = (userId) => {
+    setUserData((prevUserData) =>
+      prevUserData.filter((user) => user.id !== userId)
+    );
+  };
+
+  const handleEditOk = async () => {
+    await client.graphql({
+      query: updateUsers,
+      variables: {
+        input: {
+          id: `${currentUser.id}`,
+          email: `${currentUser.email}`,
+          phoneNumber: `${currentUser.phoneNumber}`,
+          status: `${currentUser.status}`,
+          type: `${currentUser.type}`,
+        },
+      },
     });
-  }
-  const handleSizesTags = (value) => {
-    console.log(`Selected: ${value}`);
-  };
-  // product sizes
 
-  const handleChange = (value) => {
-    console.log(`selected ${value}`);
-  };
+    const updatedUser = await client.graphql({
+      query: getUsers,
+      variables: {
+        id: currentUser.id,
+      },
+    });
 
-  const props = {
-    action: "https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload",
-    onChange({ file, fileList }) {
-      if (file.status !== "uploading") {
-        console.log(file, fileList);
-      }
-    },
-    defaultFileList: [],
+    updateUsersInState(updatedUser.data.getUsers);
+    setIsEditModalVisible(false);
   };
 
-  const [searchText, setSearchText] = useState("");
-  const [searchedColumn, setSearchedColumn] = useState("");
+  const handleEditCancel = () => {
+    setIsEditModalVisible(false);
+  };
 
-  const searchInput = useRef(null);
-  const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
+  const showDeleteModal = (record) => {
+    setCurrentUser(record);
+    setIsDeleteModalVisible(true);
   };
-  const handleReset = (clearFilters) => {
-    clearFilters();
-    setSearchText("");
+
+  const handleDeleteOk = async () => {
+    const deletedUser = await client.graphql({
+      query: deleteUsers,
+      variables: {
+        input: {
+          id: currentUser.id,
+        },
+      },
+    });
+
+    deleteUserFromState(deletedUser.data.deleteUsers.id);
+    setIsDeleteModalVisible(false);
+    console.log("User deleted:", deletedUser.data.deleteUsers);
   };
-  const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-      close,
-    }) => (
-      <div
-        style={{
-          padding: 8,
-        }}
-        onKeyDown={(e) => e.stopPropagation()}
-      >
-        <Input
-          ref={searchInput}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={(e) =>
-            setSelectedKeys(e.target.value ? [e.target.value] : [])
-          }
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{
-            marginBottom: 8,
-            display: "block",
-          }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{
-              width: 90,
-            }}
-          >
-            Search
-          </Button>
-          <Button
-            onClick={() => clearFilters && handleReset(clearFilters)}
-            size="small"
-            style={{
-              width: 90,
-            }}
-          >
-            Reset
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({
-                closeDropdown: false,
-              });
-              setSearchText(selectedKeys[0]);
-              setSearchedColumn(dataIndex);
-            }}
-          >
-            Filter
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              close();
-            }}
-          >
-            close
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: (filtered) => (
-      <SearchOutlined
-        style={{
-          color: filtered ? "#1677ff" : undefined,
-        }}
-      />
-    ),
-    onFilter: (value, record) =>
-      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current?.select(), 100);
-      }
-    },
-    render: (text) =>
-      searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{
-            backgroundColor: "#ffc069",
-            padding: 0,
-          }}
-          searchWords={[searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ""}
-        />
-      ) : (
-        text
-      ),
+
+  const handleDeleteCancel = () => {
+    setIsDeleteModalVisible(false);
+  };
+
+  const filteredData = userData.filter((user) => {
+    return (
+      (searchEmail
+        ? user.email.toLowerCase().includes(searchEmail.toLowerCase())
+        : true) &&
+      (searchStatus !== "All"
+        ? user.status.toLowerCase() === searchStatus.toLowerCase()
+        : true) &&
+      (searchType !== "All"
+        ? user.type.toLowerCase() === searchType.toLowerCase()
+        : true)
+    );
   });
 
-  const [placedOrdersEditModalOpen, setPlacedOrdersEditModalOpen] =
-    useState(false);
-
-  const handleCategoryForPlacedOrdersTable = (value) => {
-    console.log(`selected ${value}`);
-  };
-
-  const placedOrdersData = [
+  const columns = [
     {
-      key: "1",
-      name: "John Brown",
-      age: 32,
-      address: "New York No. 1 Lake Park",
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
     },
     {
-      key: "2",
-      name: "Joe Black",
-      age: 42,
-      address: "London No. 1 Lake Park",
+      title: "Phone Number",
+      dataIndex: "phoneNumber",
+      key: "phoneNumber",
     },
     {
-      key: "3",
-      name: "Jim Green",
-      age: 32,
-      address: "Sydney No. 1 Lake Park",
+      title: "User Status",
+      dataIndex: "status",
+      key: "status",
     },
     {
-      key: "4",
-      name: "Jim Red",
-      age: 32,
-      address: "London No. 2 Lake Park",
-    },
-  ];
-
-  const placedOrdersColumns = [
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-      ...getColumnSearchProps("name"),
+      title: "User Type",
+      dataIndex: "type",
+      key: "type",
     },
     {
-      title: "Category",
-      dataIndex: "age",
-      key: "age",
-      ...getColumnSearchProps("age"),
+      title: "Created At",
+      dataIndex: "createdAt",
+      key: "createdAt",
     },
     {
-      title: "Tag",
-      dataIndex: "address",
-      key: "address",
-      ...getColumnSearchProps("address"),
-      sorter: (a, b) => a.address.length - b.address.length,
-      sortDirections: ["descend", "ascend"],
+      title: "Updated At",
+      dataIndex: "updatedAt",
+      key: "updatedAt",
     },
-
-    {
-      title: "Price",
-      dataIndex: "address",
-      key: "address",
-      ...getColumnSearchProps("address"),
-      sorter: (a, b) => a.address.length - b.address.length,
-      sortDirections: ["descend", "ascend"],
-    },
-
-    {
-      title: "Stock Keeping Unit",
-      dataIndex: "address",
-      key: "address",
-      ...getColumnSearchProps("address"),
-      sorter: (a, b) => a.address.length - b.address.length,
-      sortDirections: ["descend", "ascend"],
-    },
-
-    {
-      title: "Stock Status",
-      dataIndex: "address",
-      key: "address",
-      ...getColumnSearchProps("address"),
-      sorter: (a, b) => a.address.length - b.address.length,
-      sortDirections: ["descend", "ascend"],
-    },
-
-    {
-      title: "Date Added",
-      dataIndex: "address",
-      key: "address",
-      ...getColumnSearchProps("address"),
-      sorter: (a, b) => a.address.length - b.address.length,
-      sortDirections: ["descend", "ascend"],
-    },
-
     {
       title: "Actions",
-      dataIndex: "address",
-      key: "address",
-      render: () => (
+      key: "actions",
+      render: (_, record) => (
         <div className="flex gap-4">
           <FaPen
             className="text-black cursor-pointer"
-            onClick={() => setPlacedOrdersEditModalOpen(true)}
+            onClick={() => showEditModal(record)} // Open edit modal with specific user data
           />
-          <Modal
-            title="Update Product"
-            centered
-            open={placedOrdersEditModalOpen}
-            footer={[
-              <button
-                className="bg-white border border-black px-3 py-2 rounded-md text-black font-semibold mr-3"
-                onClick={() => setPlacedOrdersEditModalOpen(false)}
-              >
-                Cancel
-              </button>,
-
-              <button className="bg-black border border-black px-3 py-2 rounded-md text-white font-semibold">
-                Save
-              </button>,
-            ]}
-            className="mt-10 px-4"
-          >
-            <div className="mt-6 flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label htmlFor="product-name">Product name</label>
-                <input
-                  type="text"
-                  className="border rounded-md py-2 px-3"
-                  id="product-name"
-                  placeholder="Product name"
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label htmlFor="product-category">Product category</label>
-
-                <select
-                  name="product-category"
-                  id="product-category"
-                  className="border rounded-md py-2 px-3 bg-transparent"
-                >
-                  <option value="" default disabled>
-                    Select a category
-                  </option>
-                  <option value="clothing">Clothing</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label
-                  for="product-size"
-                  class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Product Tags
-                </label>
-
-                <Select
-                  mode="tags"
-                  style={{
-                    width: "100%",
-                  }}
-                  placeholder="Tags Mode"
-                  onChange={handleProductTags}
-                  options={productTags}
-                />
-              </div>
-
-              <div class="w-full flex flex-col gap-2">
-                <label
-                  for="priceInput"
-                  class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Product price
-                </label>
-
-                <div class="flex border rounded-md">
-                  <div className="rounded-s-md bg-slate-100 flex items-center justify-center px-2">
-                    <span>PKR</span>
-                  </div>
-
-                  <input
-                    type="number"
-                    id="priceInput"
-                    class="w-full px-3 py-2 rounded-e-md"
-                    placeholder="0.00"
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label htmlFor="product-sku">Stock Keeping Unit</label>
-
-                <select
-                  name="product-sku"
-                  id="product-sku"
-                  className="border rounded-md py-2 px-3 bg-transparent"
-                >
-                  <option value="" default disabled>
-                    Select a stock keeping unit
-                  </option>
-                  <option value="clothing">Clothing</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label htmlFor="product-status">Status</label>
-
-                <select
-                  name="product-status"
-                  id="product-status"
-                  className="border rounded-md py-2 px-3 bg-transparent"
-                >
-                  <option value="" default disabled>
-                    Select product status
-                  </option>
-                  <option value="Active">Active</option>
-                  <option value="Block">Block</option>
-                </select>
-              </div>
-            </div>
-          </Modal>
-
-          <FaTrash className="text-red-800 cursor-pointer" />
-        </div>
-      ),
-    },
-  ];
-
-  const [cancelledProductsEditModalOpen, setCancelledProductsEditModalOpen] =
-    useState(false);
-
-  const handleCategoryForCancelledOrdersTable = (value) => {
-    console.log(`selected ${value}`);
-  };
-
-  const cancelledOrdersData = [
-    {
-      key: "1",
-      name: "John Brown",
-      age: 32,
-      address: "New York No. 1 Lake Park",
-    },
-    {
-      key: "2",
-      name: "Joe Black",
-      age: 42,
-      address: "London No. 1 Lake Park",
-    },
-    {
-      key: "3",
-      name: "Jim Green",
-      age: 32,
-      address: "Sydney No. 1 Lake Park",
-    },
-    {
-      key: "4",
-      name: "Jim Red",
-      age: 32,
-      address: "London No. 2 Lake Park",
-    },
-  ];
-
-  const cancelledOrdersColumns = [
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-      ...getColumnSearchProps("name"),
-    },
-    {
-      title: "Category",
-      dataIndex: "age",
-      key: "age",
-      ...getColumnSearchProps("age"),
-    },
-    {
-      title: "Tag",
-      dataIndex: "address",
-      key: "address",
-      ...getColumnSearchProps("address"),
-      sorter: (a, b) => a.address.length - b.address.length,
-      sortDirections: ["descend", "ascend"],
-    },
-
-    {
-      title: "Price",
-      dataIndex: "address",
-      key: "address",
-      ...getColumnSearchProps("address"),
-      sorter: (a, b) => a.address.length - b.address.length,
-      sortDirections: ["descend", "ascend"],
-    },
-
-    {
-      title: "Stock Keeping Unit",
-      dataIndex: "address",
-      key: "address",
-      ...getColumnSearchProps("address"),
-      sorter: (a, b) => a.address.length - b.address.length,
-      sortDirections: ["descend", "ascend"],
-    },
-
-    {
-      title: "Stock Status",
-      dataIndex: "address",
-      key: "address",
-      ...getColumnSearchProps("address"),
-      sorter: (a, b) => a.address.length - b.address.length,
-      sortDirections: ["descend", "ascend"],
-    },
-
-    {
-      title: "Date Added",
-      dataIndex: "address",
-      key: "address",
-      ...getColumnSearchProps("address"),
-      sorter: (a, b) => a.address.length - b.address.length,
-      sortDirections: ["descend", "ascend"],
-    },
-
-    {
-      title: "Actions",
-      dataIndex: "address",
-      key: "address",
-      render: () => (
-        <div className="flex gap-4">
-          <FaPen
-            className="text-black cursor-pointer"
-            onClick={() => setCancelledProductsEditModalOpen(true)}
+          <FaTrash
+            className="text-red-800 cursor-pointer"
+            onClick={() => showDeleteModal(record)} // Open delete modal with specific user data
           />
-          <Modal
-            title="Update Product"
-            centered
-            open={cancelledProductsEditModalOpen}
-            footer={[
-              <button
-                className="bg-white border border-black px-3 py-2 rounded-md text-black font-semibold mr-3"
-                onClick={() => setCancelledProductsEditModalOpen(false)}
-              >
-                Cancel
-              </button>,
-
-              <button className="bg-black border border-black px-3 py-2 rounded-md text-white font-semibold">
-                Save
-              </button>,
-            ]}
-            className="mt-10 px-4"
-          >
-            <div className="mt-6 flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label htmlFor="product-name">Product name</label>
-                <input
-                  type="text"
-                  className="border rounded-md py-2 px-3"
-                  id="product-name"
-                  placeholder="Product name"
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label htmlFor="product-category">Product category</label>
-
-                <select
-                  name="product-category"
-                  id="product-category"
-                  className="border rounded-md py-2 px-3 bg-transparent"
-                >
-                  <option value="" default disabled>
-                    Select a category
-                  </option>
-                  <option value="clothing">Clothing</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label
-                  for="product-size"
-                  class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Product Tags
-                </label>
-
-                <Select
-                  mode="tags"
-                  style={{
-                    width: "100%",
-                  }}
-                  placeholder="Tags Mode"
-                  onChange={handleProductTags}
-                  options={productTags}
-                />
-              </div>
-
-              <div class="w-full flex flex-col gap-2">
-                <label
-                  for="priceInput"
-                  class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Product price
-                </label>
-
-                <div class="flex border rounded-md">
-                  <div className="rounded-s-md bg-slate-100 flex items-center justify-center px-2">
-                    <span>PKR</span>
-                  </div>
-
-                  <input
-                    type="number"
-                    id="priceInput"
-                    class="w-full px-3 py-2 rounded-e-md"
-                    placeholder="0.00"
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label htmlFor="product-sku">Stock Keeping Unit</label>
-
-                <select
-                  name="product-sku"
-                  id="product-sku"
-                  className="border rounded-md py-2 px-3 bg-transparent"
-                >
-                  <option value="" default disabled>
-                    Select a stock keeping unit
-                  </option>
-                  <option value="clothing">Clothing</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label htmlFor="product-status">Status</label>
-
-                <select
-                  name="product-status"
-                  id="product-status"
-                  className="border rounded-md py-2 px-3 bg-transparent"
-                >
-                  <option value="" default disabled>
-                    Select product status
-                  </option>
-                  <option value="Active">Active</option>
-                  <option value="Block">Block</option>
-                </select>
-              </div>
-            </div>
-          </Modal>
-
-          <FaTrash className="text-red-800 cursor-pointer" />
-        </div>
-      ),
-    },
-  ];
-
-  const [notDeliveredEditModalOpen, setNotDeliveredEditModalOpen] =
-    useState(false);
-
-  const handleCategoryForNotDeliveredOrdersTable = (value) => {
-    console.log(`selected ${value}`);
-  };
-
-  const notDeliveredOrdersData = [
-    {
-      key: "1",
-      name: "John Brown",
-      age: 32,
-      address: "New York No. 1 Lake Park",
-    },
-    {
-      key: "2",
-      name: "Joe Black",
-      age: 42,
-      address: "London No. 1 Lake Park",
-    },
-    {
-      key: "3",
-      name: "Jim Green",
-      age: 32,
-      address: "Sydney No. 1 Lake Park",
-    },
-    {
-      key: "4",
-      name: "Jim Red",
-      age: 32,
-      address: "London No. 2 Lake Park",
-    },
-  ];
-
-  const notDeliveredOrdersColumns = [
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-      ...getColumnSearchProps("name"),
-    },
-    {
-      title: "Category",
-      dataIndex: "age",
-      key: "age",
-      ...getColumnSearchProps("age"),
-    },
-    {
-      title: "Tag",
-      dataIndex: "address",
-      key: "address",
-      ...getColumnSearchProps("address"),
-      sorter: (a, b) => a.address.length - b.address.length,
-      sortDirections: ["descend", "ascend"],
-    },
-
-    {
-      title: "Price",
-      dataIndex: "address",
-      key: "address",
-      ...getColumnSearchProps("address"),
-      sorter: (a, b) => a.address.length - b.address.length,
-      sortDirections: ["descend", "ascend"],
-    },
-
-    {
-      title: "Stock Keeping Unit",
-      dataIndex: "address",
-      key: "address",
-      ...getColumnSearchProps("address"),
-      sorter: (a, b) => a.address.length - b.address.length,
-      sortDirections: ["descend", "ascend"],
-    },
-
-    {
-      title: "Stock Status",
-      dataIndex: "address",
-      key: "address",
-      ...getColumnSearchProps("address"),
-      sorter: (a, b) => a.address.length - b.address.length,
-      sortDirections: ["descend", "ascend"],
-    },
-
-    {
-      title: "Date Added",
-      dataIndex: "address",
-      key: "address",
-      ...getColumnSearchProps("address"),
-      sorter: (a, b) => a.address.length - b.address.length,
-      sortDirections: ["descend", "ascend"],
-    },
-
-    {
-      title: "Actions",
-      dataIndex: "address",
-      key: "address",
-      render: () => (
-        <div className="flex gap-4">
-          <FaPen
-            className="text-black cursor-pointer"
-            onClick={() => setNotDeliveredEditModalOpen(true)}
-          />
-          <Modal
-            title="Update Product"
-            centered
-            open={notDeliveredEditModalOpen}
-            footer={[
-              <button
-                className="bg-white border border-black px-3 py-2 rounded-md text-black font-semibold mr-3"
-                onClick={() => setNotDeliveredEditModalOpen(false)}
-              >
-                Cancel
-              </button>,
-
-              <button className="bg-black border border-black px-3 py-2 rounded-md text-white font-semibold">
-                Save
-              </button>,
-            ]}
-            className="mt-10 px-4"
-          >
-            <div className="mt-6 flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label htmlFor="product-name">Product name</label>
-                <input
-                  type="text"
-                  className="border rounded-md py-2 px-3"
-                  id="product-name"
-                  placeholder="Product name"
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label htmlFor="product-category">Product category</label>
-
-                <select
-                  name="product-category"
-                  id="product-category"
-                  className="border rounded-md py-2 px-3 bg-transparent"
-                >
-                  <option value="" default disabled>
-                    Select a category
-                  </option>
-                  <option value="clothing">Clothing</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label
-                  for="product-size"
-                  class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Product Tags
-                </label>
-
-                <Select
-                  mode="tags"
-                  style={{
-                    width: "100%",
-                  }}
-                  placeholder="Tags Mode"
-                  onChange={handleProductTags}
-                  options={productTags}
-                />
-              </div>
-
-              <div class="w-full flex flex-col gap-2">
-                <label
-                  for="priceInput"
-                  class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Product price
-                </label>
-
-                <div class="flex border rounded-md">
-                  <div className="rounded-s-md bg-slate-100 flex items-center justify-center px-2">
-                    <span>PKR</span>
-                  </div>
-
-                  <input
-                    type="number"
-                    id="priceInput"
-                    class="w-full px-3 py-2 rounded-e-md"
-                    placeholder="0.00"
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label htmlFor="product-sku">Stock Keeping Unit</label>
-
-                <select
-                  name="product-sku"
-                  id="product-sku"
-                  className="border rounded-md py-2 px-3 bg-transparent"
-                >
-                  <option value="" default disabled>
-                    Select a stock keeping unit
-                  </option>
-                  <option value="clothing">Clothing</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label htmlFor="product-status">Status</label>
-
-                <select
-                  name="product-status"
-                  id="product-status"
-                  className="border rounded-md py-2 px-3 bg-transparent"
-                >
-                  <option value="" default disabled>
-                    Select product status
-                  </option>
-                  <option value="Active">Active</option>
-                  <option value="Block">Block</option>
-                </select>
-              </div>
-            </div>
-          </Modal>
-
-          <FaTrash className="text-red-800 cursor-pointer" />
         </div>
       ),
     },
@@ -858,136 +172,148 @@ const Orders = () => {
   return (
     <div>
       <div className="flex flex-col gap-3 mt-10">
-        <div className="flex justify-between">
-          <span className="font-bold">Placed Orders</span>
-
-          <div className="flex gap-3 justify-center items-center text-sm">
-            <label htmlFor="category-for-placed-orders">
-              Select a category
+        <div className="flex flex-nowrap items-center space-x-4">
+          <div className="flex flex-col w-full ">
+            <label htmlFor="email" className="text-sm font-medium mb-1">
+              Search By Email
             </label>
+            <Input
+              id="email"
+              placeholder="Search by Email"
+              value={searchEmail}
+              onChange={(e) => setSearchEmail(e.target.value)} // Update the searchEmail state
+              className="w-full"
+            />
+          </div>
 
+          <div className="flex flex-col w-full ">
+            <label htmlFor="user-status" className="text-sm font-medium mb-1">
+              User Status
+            </label>
             <Select
-              id="category-for-placed-orders"
-              defaultValue="All"
-              style={{
-                width: 120,
-              }}
-              onChange={() => handleCategoryForPlacedOrdersTable()}
+              id="user-status"
+              value={searchStatus}
+              onChange={(value) => setSearchStatus(value)} // Update the searchStatus state
+              className="w-full"
               options={[
-                {
-                  value: "All",
-                  label: "All",
-                },
-                {
-                  value: "lucy",
-                  label: "Lucy",
-                },
-                {
-                  value: "Yiminghe",
-                  label: "yiminghe",
-                },
+                { value: "All", label: "All" },
+                { value: "Active", label: "Active" },
+                { value: "Block", label: "Block" },
               ]}
             />
           </div>
-        </div>
-        <div className="border rounded-lg ">
-          <Table columns={placedOrdersColumns} dataSource={placedOrdersData} />
-        </div>
-      </div>
 
-      <div className="flex flex-col gap-3 mt-10">
-        <div className="flex justify-between">
-          <span className="font-bold">Cancelled Orders</span>
-
-          <div className="flex gap-3 justify-center items-center text-sm">
-            <label htmlFor="category-for-placed-orders">
-              Select a category
+          <div className="flex flex-col w-full ">
+            <label htmlFor="user-type" className="text-sm font-medium mb-1">
+              User Type
             </label>
-
             <Select
-              defaultValue="All"
-              style={{
-                width: 120,
-              }}
-              onChange={() => handleCategoryForCancelledOrdersTable()}
+              id="user-type"
+              value={searchType}
+              onChange={(value) => setSearchType(value)} // Update the searchType state
+              className="w-full"
               options={[
-                {
-                  value: "All",
-                  label: "All",
-                },
-                {
-                  value: "lucy",
-                  label: "Lucy",
-                },
-                {
-                  value: "Yiminghe",
-                  label: "yiminghe",
-                },
-                {
-                  value: "disabled",
-                  label: "Disabled",
-                  disabled: true,
-                },
+                { value: "All", label: "All" },
+                { value: "User", label: "User" },
+                { value: "Admin", label: "Admin" },
               ]}
             />
           </div>
+
+          <Button
+            type="primary"
+            className="w-full md:w-auto flex self-end"
+            onClick={handleSearch}
+          >
+            Search
+          </Button>
         </div>
 
-        <div className="border rounded-lg">
-          <Table
-            columns={cancelledOrdersColumns}
-            dataSource={cancelledOrdersData}
-          />
-        </div>
+        <Table columns={columns} dataSource={filteredData} />
       </div>
 
-      <div className="flex flex-col gap-3 mt-10">
-        <div className="flex justify-between">
-          <span className="font-bold">Not Delivered Orders</span>
-
-          <div className="flex gap-3 justify-center items-center text-sm">
-            <label htmlFor="category-for-placed-orders">
-              Select a category
-            </label>
-
+      {/* Edit Modal */}
+      <Modal
+        title="Edit User"
+        open={isEditModalVisible}
+        onCancel={handleEditCancel}
+        footer={[
+          <Button key="save" type="primary" onClick={handleEditOk}>
+            Save
+          </Button>,
+          <Button key="cancel" onClick={handleEditCancel}>
+            Cancel
+          </Button>,
+        ]}
+      >
+        <Form layout="vertical">
+          <Form.Item label="Email">
+            <Input
+              value={currentUser?.email || ""}
+              onChange={(e) =>
+                setCurrentUser((prev) => ({ ...prev, email: e.target.value }))
+              }
+            />
+          </Form.Item>
+          <Form.Item label="User Status">
             <Select
-              defaultValue="All"
-              style={{
-                width: 120,
-              }}
-              onChange={() => handleCategoryForNotDeliveredOrdersTable()}
+              value={currentUser?.status || ""}
+              onChange={(value) =>
+                setCurrentUser((prev) => ({ ...prev, status: value }))
+              }
               options={[
-                {
-                  value: "All",
-                  label: "All",
-                },
-                {
-                  value: "lucy",
-                  label: "Lucy",
-                },
-                {
-                  value: "Yiminghe",
-                  label: "yiminghe",
-                },
-                {
-                  value: "disabled",
-                  label: "Disabled",
-                  disabled: true,
-                },
+                { value: "Active", label: "Active" },
+                { value: "Block", label: "Block" },
               ]}
             />
-          </div>
-        </div>
+          </Form.Item>
+          <Form.Item label="User Type">
+            <Select
+              value={currentUser?.type || ""}
+              onChange={(value) =>
+                setCurrentUser((prev) => ({ ...prev, type: value }))
+              }
+              options={[
+                { value: "User", label: "User" },
+                { value: "Admin", label: "Admin" },
+              ]}
+            />
+          </Form.Item>
+          <Form.Item label="Phone Number">
+            <Input
+              value={currentUser?.phoneNumber || ""}
+              onChange={(e) =>
+                setCurrentUser((prev) => ({
+                  ...prev,
+                  phoneNumber: e.target.value,
+                }))
+              }
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
 
-        <div className="border rounded-lg">
-          <Table
-            columns={notDeliveredOrdersColumns}
-            dataSource={notDeliveredOrdersData}
-          />
-        </div>
-      </div>
+      {/* Delete Modal */}
+      <Modal
+        title="Confirm Delete"
+        open={isDeleteModalVisible}
+        onCancel={handleDeleteCancel} // Keep the cancel functionality
+        footer={[
+          <Button key="cancel" onClick={handleDeleteCancel}>
+            Cancel
+          </Button>,
+          <Button key="delete" type="primary" danger onClick={handleDeleteOk}>
+            Delete
+          </Button>,
+        ]}
+      >
+        <p>
+          Are you sure you want to delete the user{" "}
+          <strong>{currentUser?.email}</strong>?
+        </p>
+      </Modal>
     </div>
   );
 };
 
-export default Orders;
+export default Users;

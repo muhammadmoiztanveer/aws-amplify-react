@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { Button, Input, Space, Table, Modal, Select } from "antd";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { generateClient } from "aws-amplify/api";
-import { createTodo, updateTodo, deleteTodo } from "../../graphql/mutations";
-import { listTodos } from "../../graphql/queries";
+import { createTasks } from "../../graphql/mutations";
 
 const TaskManager = () => {
   // State for managing tasks
@@ -19,7 +18,7 @@ const TaskManager = () => {
 
   const addTask = async () => {
     await client.graphql({
-      query: createTodo,
+      query: createTasks,
       variables: {
         input: {
           name: "My first todo!",

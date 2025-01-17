@@ -1,31 +1,35 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const getTodo = /* GraphQL */ `
-  query GetTodo($id: ID!) {
-    getTodo(id: $id) {
-      id
-      name
-      description
+export const getUsers = /* GraphQL */ `
+  query GetUsers($id: ID!) {
+    getUsers(id: $id) {
+      email
+      phoneNumber
+      type
+      status
       createdAt
       updatedAt
+      id
       __typename
     }
   }
 `;
-export const listTodos = /* GraphQL */ `
-  query ListTodos(
-    $filter: ModelTodoFilterInput
+export const listUsers = /* GraphQL */ `
+  query ListUsers(
+    $filter: ModelUsersFilterInput
     $limit: Int
     $nextToken: String
   ) {
-    listTodos(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    listUsers(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
-        id
-        name
-        description
+        email
+        phoneNumber
+        type
+        status
         createdAt
         updatedAt
+        id
         __typename
       }
       nextToken
@@ -33,31 +37,41 @@ export const listTodos = /* GraphQL */ `
     }
   }
 `;
-export const getBlog = /* GraphQL */ `
-  query GetBlog($id: ID!) {
-    getBlog(id: $id) {
-      id
-      blogname
-      blogdescription
+export const getTasks = /* GraphQL */ `
+  query GetTasks($id: ID!) {
+    getTasks(id: $id) {
+      user_id
+      title
+      decription
+      file_paths
+      status
+      notes
+      reacts
       createdAt
       updatedAt
+      id
       __typename
     }
   }
 `;
-export const listBlogs = /* GraphQL */ `
-  query ListBlogs(
-    $filter: ModelBlogFilterInput
+export const listTasks = /* GraphQL */ `
+  query ListTasks(
+    $filter: ModelTasksFilterInput
     $limit: Int
     $nextToken: String
   ) {
-    listBlogs(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    listTasks(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
-        id
-        blogname
-        blogdescription
+        user_id
+        title
+        decription
+        file_paths
+        status
+        notes
+        reacts
         createdAt
         updatedAt
+        id
         __typename
       }
       nextToken

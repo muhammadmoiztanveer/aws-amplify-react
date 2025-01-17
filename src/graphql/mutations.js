@@ -1,92 +1,113 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const createTodo = /* GraphQL */ `
-  mutation CreateTodo(
-    $input: CreateTodoInput!
-    $condition: ModelTodoConditionInput
+export const createUsers = /* GraphQL */ `
+  mutation CreateUsers(
+    $input: CreateUsersInput!
+    $condition: ModelUsersConditionInput
   ) {
-    createTodo(input: $input, condition: $condition) {
-      id
-      name
-      description
+    createUsers(input: $input, condition: $condition) {
+      email
+      phoneNumber
+      type
+      status
       createdAt
       updatedAt
+      id
       __typename
     }
   }
 `;
-export const updateTodo = /* GraphQL */ `
-  mutation UpdateTodo(
-    $input: UpdateTodoInput!
-    $condition: ModelTodoConditionInput
+export const updateUsers = /* GraphQL */ `
+  mutation UpdateUsers(
+    $input: UpdateUsersInput!
+    $condition: ModelUsersConditionInput
   ) {
-    updateTodo(input: $input, condition: $condition) {
-      id
-      name
-      description
+    updateUsers(input: $input, condition: $condition) {
+      email
+      phoneNumber
+      type
+      status
       createdAt
       updatedAt
+      id
       __typename
     }
   }
 `;
-export const deleteTodo = /* GraphQL */ `
-  mutation DeleteTodo(
-    $input: DeleteTodoInput!
-    $condition: ModelTodoConditionInput
+export const deleteUsers = /* GraphQL */ `
+  mutation DeleteUsers(
+    $input: DeleteUsersInput!
+    $condition: ModelUsersConditionInput
   ) {
-    deleteTodo(input: $input, condition: $condition) {
-      id
-      name
-      description
+    deleteUsers(input: $input, condition: $condition) {
+      email
+      phoneNumber
+      type
+      status
       createdAt
       updatedAt
+      id
       __typename
     }
   }
 `;
-export const createBlog = /* GraphQL */ `
-  mutation CreateBlog(
-    $input: CreateBlogInput!
-    $condition: ModelBlogConditionInput
+export const createTasks = /* GraphQL */ `
+  mutation CreateTasks(
+    $input: CreateTasksInput!
+    $condition: ModelTasksConditionInput
   ) {
-    createBlog(input: $input, condition: $condition) {
-      id
-      blogname
-      blogdescription
+    createTasks(input: $input, condition: $condition) {
+      user_id
+      title
+      decription
+      file_paths
+      status
+      notes
+      reacts
       createdAt
       updatedAt
+      id
       __typename
     }
   }
 `;
-export const updateBlog = /* GraphQL */ `
-  mutation UpdateBlog(
-    $input: UpdateBlogInput!
-    $condition: ModelBlogConditionInput
+export const updateTasks = /* GraphQL */ `
+  mutation UpdateTasks(
+    $input: UpdateTasksInput!
+    $condition: ModelTasksConditionInput
   ) {
-    updateBlog(input: $input, condition: $condition) {
-      id
-      blogname
-      blogdescription
+    updateTasks(input: $input, condition: $condition) {
+      user_id
+      title
+      decription
+      file_paths
+      status
+      notes
+      reacts
       createdAt
       updatedAt
+      id
       __typename
     }
   }
 `;
-export const deleteBlog = /* GraphQL */ `
-  mutation DeleteBlog(
-    $input: DeleteBlogInput!
-    $condition: ModelBlogConditionInput
+export const deleteTasks = /* GraphQL */ `
+  mutation DeleteTasks(
+    $input: DeleteTasksInput!
+    $condition: ModelTasksConditionInput
   ) {
-    deleteBlog(input: $input, condition: $condition) {
-      id
-      blogname
-      blogdescription
+    deleteTasks(input: $input, condition: $condition) {
+      user_id
+      title
+      decription
+      file_paths
+      status
+      notes
+      reacts
       createdAt
       updatedAt
+      id
       __typename
     }
   }

@@ -1,74 +1,95 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const onCreateTodo = /* GraphQL */ `
-  subscription OnCreateTodo($filter: ModelSubscriptionTodoFilterInput) {
-    onCreateTodo(filter: $filter) {
-      id
-      name
-      description
+export const onCreateUsers = /* GraphQL */ `
+  subscription OnCreateUsers($filter: ModelSubscriptionUsersFilterInput) {
+    onCreateUsers(filter: $filter) {
+      email
+      phoneNumber
+      type
+      status
       createdAt
       updatedAt
+      id
       __typename
     }
   }
 `;
-export const onUpdateTodo = /* GraphQL */ `
-  subscription OnUpdateTodo($filter: ModelSubscriptionTodoFilterInput) {
-    onUpdateTodo(filter: $filter) {
-      id
-      name
-      description
+export const onUpdateUsers = /* GraphQL */ `
+  subscription OnUpdateUsers($filter: ModelSubscriptionUsersFilterInput) {
+    onUpdateUsers(filter: $filter) {
+      email
+      phoneNumber
+      type
+      status
       createdAt
       updatedAt
+      id
       __typename
     }
   }
 `;
-export const onDeleteTodo = /* GraphQL */ `
-  subscription OnDeleteTodo($filter: ModelSubscriptionTodoFilterInput) {
-    onDeleteTodo(filter: $filter) {
-      id
-      name
-      description
+export const onDeleteUsers = /* GraphQL */ `
+  subscription OnDeleteUsers($filter: ModelSubscriptionUsersFilterInput) {
+    onDeleteUsers(filter: $filter) {
+      email
+      phoneNumber
+      type
+      status
       createdAt
       updatedAt
+      id
       __typename
     }
   }
 `;
-export const onCreateBlog = /* GraphQL */ `
-  subscription OnCreateBlog($filter: ModelSubscriptionBlogFilterInput) {
-    onCreateBlog(filter: $filter) {
-      id
-      blogname
-      blogdescription
+export const onCreateTasks = /* GraphQL */ `
+  subscription OnCreateTasks($filter: ModelSubscriptionTasksFilterInput) {
+    onCreateTasks(filter: $filter) {
+      user_id
+      title
+      decription
+      file_paths
+      status
+      notes
+      reacts
       createdAt
       updatedAt
+      id
       __typename
     }
   }
 `;
-export const onUpdateBlog = /* GraphQL */ `
-  subscription OnUpdateBlog($filter: ModelSubscriptionBlogFilterInput) {
-    onUpdateBlog(filter: $filter) {
-      id
-      blogname
-      blogdescription
+export const onUpdateTasks = /* GraphQL */ `
+  subscription OnUpdateTasks($filter: ModelSubscriptionTasksFilterInput) {
+    onUpdateTasks(filter: $filter) {
+      user_id
+      title
+      decription
+      file_paths
+      status
+      notes
+      reacts
       createdAt
       updatedAt
+      id
       __typename
     }
   }
 `;
-export const onDeleteBlog = /* GraphQL */ `
-  subscription OnDeleteBlog($filter: ModelSubscriptionBlogFilterInput) {
-    onDeleteBlog(filter: $filter) {
-      id
-      blogname
-      blogdescription
+export const onDeleteTasks = /* GraphQL */ `
+  subscription OnDeleteTasks($filter: ModelSubscriptionTasksFilterInput) {
+    onDeleteTasks(filter: $filter) {
+      user_id
+      title
+      decription
+      file_paths
+      status
+      notes
+      reacts
       createdAt
       updatedAt
+      id
       __typename
     }
   }

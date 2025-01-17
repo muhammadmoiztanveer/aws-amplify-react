@@ -41,11 +41,11 @@ const adminSignupPage = () => {
         options: {
           userAttributes: {
             email: values.email,
-            phone_number: values.phoneNumber, // E.164 number convention
+            phone_number: values.phoneNumber, 
             "custom:type": "Admin",
+            "custom:status": "Active",
           },
-          // optional
-          autoSignIn: true, // or SignInOptions e.g { authFlowType: "USER_SRP_AUTH" }
+          autoSignIn: true, 
         },
       });
 
