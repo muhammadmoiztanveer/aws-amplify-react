@@ -1,16 +1,24 @@
 import React, { useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { signIn, signOut } from "aws-amplify/auth";
+import { signIn, fetchAuthSession } from "aws-amplify/auth";
 import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
-  const expireSession = async () => {
-    return await signOut();
-  };
+  async function currentSession() {
+    try {
+      const { accessToken, idToken } = (await fetchAuthSession()).tokens ?? {};
+
+
+      console.log("access tokennn", accessToken);
+      console.log("id Tokennn", idToken);
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
   useEffect(() => {
-    expireSession();
+    currentSession();
   }, []);
 
   const navigate = useNavigate();

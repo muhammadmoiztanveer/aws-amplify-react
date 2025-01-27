@@ -13,18 +13,28 @@ type Users @model {
   phoneNumber: String
   type: String
   status: String
+  room_id: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
 }
 
 type Tasks @model {
-  user_id: Int
+  user_id: String
+  room_id: String @index (name: "byRoomId", queryField: "fetchTasksByRoomId")
   title: String
-  decription: String
+  description: String
   file_paths: String
   status: String
   notes: String
   reacts: String
   createdAt: AWSDateTime
   updatedAt: AWSDateTime
+}
+
+type Rooms @model {
+  user_1: String
+  user_2: String
+  user_3: String
+  user_4: String
+  user_5: String
 }

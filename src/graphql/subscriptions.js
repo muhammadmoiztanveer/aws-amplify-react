@@ -8,6 +8,7 @@ export const onCreateUsers = /* GraphQL */ `
       phoneNumber
       type
       status
+      room_id
       createdAt
       updatedAt
       id
@@ -22,6 +23,7 @@ export const onUpdateUsers = /* GraphQL */ `
       phoneNumber
       type
       status
+      room_id
       createdAt
       updatedAt
       id
@@ -36,6 +38,7 @@ export const onDeleteUsers = /* GraphQL */ `
       phoneNumber
       type
       status
+      room_id
       createdAt
       updatedAt
       id
@@ -47,8 +50,9 @@ export const onCreateTasks = /* GraphQL */ `
   subscription OnCreateTasks($filter: ModelSubscriptionTasksFilterInput) {
     onCreateTasks(filter: $filter) {
       user_id
+      room_id
       title
-      decription
+      description
       file_paths
       status
       notes
@@ -64,8 +68,9 @@ export const onUpdateTasks = /* GraphQL */ `
   subscription OnUpdateTasks($filter: ModelSubscriptionTasksFilterInput) {
     onUpdateTasks(filter: $filter) {
       user_id
+      room_id
       title
-      decription
+      description
       file_paths
       status
       notes
@@ -81,8 +86,9 @@ export const onDeleteTasks = /* GraphQL */ `
   subscription OnDeleteTasks($filter: ModelSubscriptionTasksFilterInput) {
     onDeleteTasks(filter: $filter) {
       user_id
+      room_id
       title
-      decription
+      description
       file_paths
       status
       notes
@@ -90,6 +96,51 @@ export const onDeleteTasks = /* GraphQL */ `
       createdAt
       updatedAt
       id
+      __typename
+    }
+  }
+`;
+export const onCreateRooms = /* GraphQL */ `
+  subscription OnCreateRooms($filter: ModelSubscriptionRoomsFilterInput) {
+    onCreateRooms(filter: $filter) {
+      user_1
+      user_2
+      user_3
+      user_4
+      user_5
+      id
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onUpdateRooms = /* GraphQL */ `
+  subscription OnUpdateRooms($filter: ModelSubscriptionRoomsFilterInput) {
+    onUpdateRooms(filter: $filter) {
+      user_1
+      user_2
+      user_3
+      user_4
+      user_5
+      id
+      createdAt
+      updatedAt
+      __typename
+    }
+  }
+`;
+export const onDeleteRooms = /* GraphQL */ `
+  subscription OnDeleteRooms($filter: ModelSubscriptionRoomsFilterInput) {
+    onDeleteRooms(filter: $filter) {
+      user_1
+      user_2
+      user_3
+      user_4
+      user_5
+      id
+      createdAt
+      updatedAt
       __typename
     }
   }

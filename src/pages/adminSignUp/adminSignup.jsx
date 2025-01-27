@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { signUp } from "aws-amplify/auth";
@@ -41,11 +41,11 @@ const adminSignupPage = () => {
         options: {
           userAttributes: {
             email: values.email,
-            phone_number: values.phoneNumber, 
+            phone_number: values.phoneNumber,
             "custom:type": "Admin",
             "custom:status": "Active",
           },
-          autoSignIn: true, 
+          autoSignIn: true,
         },
       });
 

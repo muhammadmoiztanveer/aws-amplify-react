@@ -1,0 +1,14 @@
+{
+  "resourceName": "taskUploadedFiles",
+  "policyUUID": "c1df5411",
+  "bucketName": "task-uploaded-files",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "S3Triggere7394b0a",
+  "groupAccess": {}
+}
